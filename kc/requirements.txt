@@ -1,0 +1,7 @@
+Django==2.2.4
+django_rest_knox==4.1.0
+djangorestframework==3.13.1
+knox==0.1.14
+protobuf==3.19.3
+python-decouple==3.5
+requests==2.22.0
