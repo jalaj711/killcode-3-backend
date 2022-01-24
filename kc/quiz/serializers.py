@@ -1,30 +1,43 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from .models import Team, Player
+from .models import Team
 
 
-class TeamSerializer(serializers.ModelSerializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
-    # user_name = serializers.CharField()
-    # user_email = serializers.EmailField()
-    # user_roll = serializers.CharField()
-    score = serializers.IntegerField(default=0)
-    roundNo = serializers.IntegerField(default=1)
-
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = "__all__"
+        fields = ("username", "password")
+
+
+class TeamRegisterSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = Team
+        fields = (
+            "user",
+            "roundNo",
+            "participant1",
+            "participant1_email",
+            "participant2",
+            "participant2_email",
+            "participant3",
+            "participant3_email",
+        )
 
     def create(self, data):
-        team = User.objects.create_user(
-            username=data["username"], password=data["password"]
+        user = User.objects.create_user(
+            username=data["user"]["username"], password=data["user"]["password"]
         )
-        return team
-
-
-class PlayerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Player
-        fields = "__all__"
+        team = Team(
+            user=user,
+            participant1=data["participant1"],
+            participant1_email=data["participant1_email"],
+            participant2=data["participant2"],
+            participant2_email=data["participant2_email"],
+            participant3=data["participant3"],
+            participant3_email=data["participant3_email"],
+        )
+        team.save()
+        return user

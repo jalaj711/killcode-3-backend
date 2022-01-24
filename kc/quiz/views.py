@@ -9,14 +9,8 @@ from rest_framework.decorators import permission_classes, APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import *
 from .serializers import *
-
-# Create your views here.
-def verifyTeam(team_name, team_password):
-    try:
-        Team.objects.get(name=team_name)
-        return 1
-    except ObjectDoesNotExist:
-        return 0
+from rest_framework import status
+from django.contrib.auth import authenticate
 
 
 @permission_classes(
@@ -24,47 +18,38 @@ def verifyTeam(team_name, team_password):
         AllowAny,
     ]
 )
-class createPlayer(generics.GenericAPIView):
-    serializer_class = TeamSerializer
+class register(generics.GenericAPIView):
+    serializer_class = TeamRegisterSerializer
 
     def post(self, request, *args, **kwargs):
-        print(request.data.get("username"))
-        team_name = request.data.get("username")
-        team_password = request.data.get("password")
-        temp = verifyTeam(team_name, team_password)
-        res = {
-            "username": request.data.get("username"),
-            "password": request.data.get("password"),
-        }
-        print(temp)
-        if temp == 0:
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            team = serializer.save()
-            # player = Player.objects.create(
-            #     team=request.data.get("team_name"),
-            #     name=request.data.get("user_name"),
-            #     email=request.data.get("user_email"),
-            #     roll=request.data.get("user_roll"),
-            # )
-            # print(player)
-            print(serializer.data)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        team = serializer.save()
+        return Response(
+            {
+                "token": AuthToken.objects.create(team)[1],
+                "status": 200,
+            }
+        )
+
+
+@permission_classes(
+    [
+        AllowAny,
+    ]
+)
+class login(generics.GenericAPIView):
+    def post(self, request, *args, **kwargs):
+        d = request.data.get("user")
+        user = authenticate(username=d["username"], password=d["password"])
+        if user is not None:
             return Response(
                 {
-                    "team": serializer.data,
-                    # "player": player,
-                    "token": AuthToken.objects.create(team)[1],
-                    "status": 200,
+                    "user": UserSerializer(
+                        user, context=self.get_serializer_context()
+                    ).data,
+                    "token": AuthToken.objects.create(user)[1],
                 }
             )
-        
-        elif temp == 1:
-            team = User.objects.get(username=request.data.get("username"))
-            return Response(
-                {
-                    "team": team,
-                    "message": "team already exists",
-                    "status": 400,
-                }
-            )
-            
+        else:
+            return Response("Not Allowed", status=status.HTTP_403_FORBIDDEN)
