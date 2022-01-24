@@ -28,13 +28,15 @@ class createPlayer(generics.GenericAPIView):
     serializer_class = TeamSerializer
 
     def post(self, request, *args, **kwargs):
-        team_name = request.data.get("name")
+        print(request.data.get("username"))
+        team_name = request.data.get("username")
         team_password = request.data.get("password")
         temp = verifyTeam(team_name, team_password)
         res = {
-            "name": request.data.get("name"),
+            "username": request.data.get("username"),
             "password": request.data.get("password"),
         }
+        print(temp)
         if temp == 0:
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -57,7 +59,7 @@ class createPlayer(generics.GenericAPIView):
             )
         
         elif temp == 1:
-            team = Team.objects.get(name=request.data.get("name"))
+            team = User.objects.get(username=request.data.get("username"))
             return Response(
                 {
                     "team": team,

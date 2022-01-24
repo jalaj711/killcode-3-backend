@@ -5,7 +5,7 @@ from .models import Team, Player
 
 
 class TeamSerializer(serializers.ModelSerializer):
-    name = serializers.CharField()
+    username = serializers.CharField()
     password = serializers.CharField()
     # user_name = serializers.CharField()
     # user_email = serializers.EmailField()
@@ -15,11 +15,11 @@ class TeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("name", "password", "score", "roundNo")
+        fields = "__all__"
 
     def create(self, data):
-        team = Team.objects.create(
-            name=data["name"], password=data["password"]
+        team = User.objects.create_user(
+            username=data["username"], password=data["password"]
         )
         return team
 
