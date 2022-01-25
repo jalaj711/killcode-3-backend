@@ -40,19 +40,21 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "quiz",
     "rest_framework",
     "knox",
 ]
 
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = "kc.urls"
@@ -80,24 +82,24 @@ WSGI_APPLICATION = "kc.wsgi.application"
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-    }
-}
-
-
-# DATABASES = {        
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'kcdata',
-#         'USER': 'kcadmin',
-#         'PASSWORD': config('POSTGRES_PASSWORD'),
-#         'HOST': 'db',                          #change to 'HOST':'db'- for docker / in local development change it to 'localhost'
-#         'PORT': '5432',
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
 #     }
 # }
+
+
+DATABASES = {        
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'kcdata',
+        'USER': 'kcadmin',
+        'PASSWORD': config('POSTGRES_PASSWORD'),
+        'HOST': 'db',                          #change to 'HOST':'db'- for docker / in local development change it to 'localhost'
+        'PORT': '5432',
+    }
+}
 
 
 # Password validation
@@ -119,10 +121,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-STATIC_URL ='/static/'
-STATIC_ROOT =os.path.join(BASE_DIR, 'static')
-MEDIA_URL='/media/'
-MEDIA_ROOT=os.path.join(BASE_DIR,'media')
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -140,6 +138,11 @@ REST_KNOX = {
     "USER_SERIALIZER": "knox.serializers.UserSerializer",
 }
 
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = (
+  'http://localhost:3000','http://killcode.debsocnitdgp.in','http://killcode.myrealms.in'
+)
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
@@ -156,7 +159,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL ='/static/'
+STATIC_ROOT =os.path.join(BASE_DIR, 'static')
+MEDIA_URL='/media/'
+MEDIA_ROOT=os.path.join(BASE_DIR,'media')
 
 
 # Default primary key field type

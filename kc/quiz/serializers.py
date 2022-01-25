@@ -25,8 +25,6 @@ class TeamRegisterSerializer(serializers.ModelSerializer):
             "participant3_email",
             "participant4",
             "participant4_email",
-            "participant5",
-            "participant5_email",
         )
 
     def create(self, data):
@@ -43,8 +41,6 @@ class TeamRegisterSerializer(serializers.ModelSerializer):
             participant3_email=data["participant3_email"],
             participant4=data["participant4"],
             participant4_email=data["participant4_email"],
-            participant5=data["participant5"],
-            participant5_email=data["participant5_email"],
         )
         team.save()
         return user

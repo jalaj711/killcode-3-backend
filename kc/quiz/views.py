@@ -25,7 +25,6 @@ class register(generics.GenericAPIView):
         if (
             request.data.get("participant1") != ""
             and request.data.get("participant2") != ""
-            and request.data.get("participant3") != ""
         ):
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -36,7 +35,7 @@ class register(generics.GenericAPIView):
                     "status": 200,
                 }
             )
-        return Response("3-5 participants allowed in a team", status=status.HTTP_400_BAD_REQUEST)
+        return Response("2-4 participants allowed in a team", status=status.HTTP_400_BAD_REQUEST)
 
 
 @permission_classes(
