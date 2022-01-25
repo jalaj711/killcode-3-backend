@@ -80,24 +80,24 @@ WSGI_APPLICATION = "kc.wsgi.application"
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-#     }
-# }
-
-
-DATABASES = {        
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'kcdata',
-        'USER': 'kcadmin',
-        'PASSWORD': config('POSTGRES_PASSWORD'),
-        'HOST': 'db',                          #change to 'HOST':'db'- for docker / in local development change it to 'localhost'
-        'PORT': '5432',
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
+
+
+# DATABASES = {        
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'kcdata',
+#         'USER': 'kcadmin',
+#         'PASSWORD': config('POSTGRES_PASSWORD'),
+#         'HOST': 'db',                          #change to 'HOST':'db'- for docker / in local development change it to 'localhost'
+#         'PORT': '5432',
+#     }
+# }
 
 
 # Password validation
@@ -119,6 +119,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+STATIC_URL ='/static/'
+STATIC_ROOT =os.path.join(BASE_DIR, 'static')
+MEDIA_URL='/media/'
+MEDIA_ROOT=os.path.join(BASE_DIR,'media')
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -152,10 +156,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL ='/static/'
-STATIC_ROOT =os.path.join(BASE_DIR, 'static')
-MEDIA_URL='/media/'
-MEDIA_ROOT=os.path.join(BASE_DIR,'media')
+STATIC_URL = "static/"
 
 
 # Default primary key field type
