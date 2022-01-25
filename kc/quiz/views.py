@@ -35,7 +35,7 @@ class register(generics.GenericAPIView):
                     "status": 200,
                 }
             )
-        return Response("2-4 participants allowed in a team", status=status.HTTP_400_BAD_REQUEST)
+        return Response("Less than 2 participants not allowed.", status=status.HTTP_400_BAD_REQUEST)
 
 
 @permission_classes(
@@ -55,7 +55,15 @@ class login(generics.GenericAPIView):
                         user, context=self.get_serializer_context()
                     ).data,
                     "token": AuthToken.objects.create(user)[1],
+                    "status": 200,
                 }
             )
         else:
-            return Response("Not Allowed", status=status.HTTP_403_FORBIDDEN)
+            return Response("Wrong Credentials! Please try again.", status=status.HTTP_403_FORBIDDEN)
+        
+        
+class check(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        return Response("Registered/Logged in successfully. User is authenticated.", status=status.HTTP_200_OK)
