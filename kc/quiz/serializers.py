@@ -17,13 +17,16 @@ class TeamRegisterSerializer(serializers.ModelSerializer):
         model = Team
         fields = (
             "user",
-            "roundNo",
             "participant1",
             "participant1_email",
             "participant2",
             "participant2_email",
             "participant3",
             "participant3_email",
+            "participant4",
+            "participant4_email",
+            "participant5",
+            "participant5_email",
         )
 
     def create(self, data):
@@ -38,6 +41,16 @@ class TeamRegisterSerializer(serializers.ModelSerializer):
             participant2_email=data["participant2_email"],
             participant3=data["participant3"],
             participant3_email=data["participant3_email"],
+            participant4=data["participant4"],
+            participant4_email=data["participant4_email"],
+            participant5=data["participant5"],
+            participant5_email=data["participant5_email"],
         )
         team.save()
         return user
+    
+    
+class LoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("username", "password")
