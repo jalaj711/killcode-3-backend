@@ -22,15 +22,21 @@ class register(generics.GenericAPIView):
     serializer_class = TeamRegisterSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        team = serializer.save()
-        return Response(
-            {
-                "token": AuthToken.objects.create(team)[1],
-                "status": 200,
-            }
-        )
+        if (
+            request.data.get("participant1") != ""
+            and request.data.get("participant2") != ""
+            and request.data.get("participant3") != ""
+        ):
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
+            return Response(
+                {
+                    "token": AuthToken.objects.create(user)[1],
+                    "status": 200,
+                }
+            )
+        return Response("3-5 participants allowed in a team", status=status.HTTP_400_BAD_REQUEST)
 
 
 @permission_classes(
@@ -39,9 +45,10 @@ class register(generics.GenericAPIView):
     ]
 )
 class login(generics.GenericAPIView):
+    serializer_class = LoginSerializer
+    
     def post(self, request, *args, **kwargs):
-        d = request.data.get("user")
-        user = authenticate(username=d["username"], password=d["password"])
+        user = authenticate(username=request.data.get("username"), password=request.data.get("password"))
         if user is not None:
             return Response(
                 {
