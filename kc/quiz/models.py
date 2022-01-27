@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 class Team(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    team_name = models.CharField(max_length=200, primary_key=True)
     participant1 = models.CharField(max_length=200, blank=True)
     participant1_email = models.EmailField(max_length=254, blank=True)
     participant1_dc = models.CharField(max_length=100, blank=True)

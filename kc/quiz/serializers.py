@@ -4,10 +4,17 @@ from django.contrib.auth import authenticate
 from .models import Team
 
 
+def remove(temp):
+    p = temp.replace(" ", "")
+    n = Team.objects.all().count()
+    p = p + "_" + str(n)
+    return p
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("username", "password")
+        fields = ("password",)
 
 
 class TeamRegisterSerializer(serializers.ModelSerializer):
@@ -17,6 +24,7 @@ class TeamRegisterSerializer(serializers.ModelSerializer):
         model = Team
         fields = (
             "user",
+            "team_name",
             "participant1",
             "participant1_email",
             "participant1_dc",
@@ -36,11 +44,14 @@ class TeamRegisterSerializer(serializers.ModelSerializer):
         )
 
     def create(self, data):
+        temp = remove(data["team_name"])
+        print(temp)
         user = User.objects.create_user(
-            username=data["user"]["username"], password=data["user"]["password"]
+            username=temp, password=data["user"]["password"]
         )
         team = Team(
             user=user,
+            team_name=data["team_name"],
             participant1=data["participant1"],
             participant1_email=data["participant1_email"],
             participant1_dc=data["participant1_dc"],
@@ -60,9 +71,17 @@ class TeamRegisterSerializer(serializers.ModelSerializer):
         )
         team.save()
         return user
-    
-    
+
+
+class TeamNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Team
+        fields = ("team_name",)
+
+
 class LoginSerializer(serializers.ModelSerializer):
+    team = TeamNameSerializer()
+
     class Meta:
         model = User
-        fields = ("username", "password")
+        fields = ("team", "password")

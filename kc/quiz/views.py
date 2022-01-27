@@ -13,6 +13,10 @@ from rest_framework import status
 from django.contrib.auth import authenticate
 
 
+def remove(temp):
+    return temp.replace(" ", "")
+
+
 @permission_classes(
     [
         AllowAny,
@@ -35,7 +39,9 @@ class register(generics.GenericAPIView):
                     "status": 200,
                 }
             )
-        return Response("Less than 2 participants not allowed.", status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            "Less than 2 participants not allowed.", status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 @permission_classes(
@@ -45,9 +51,12 @@ class register(generics.GenericAPIView):
 )
 class login(generics.GenericAPIView):
     serializer_class = LoginSerializer
-    
+
     def post(self, request, *args, **kwargs):
-        user = authenticate(username=request.data.get("username"), password=request.data.get("password"))
+        team = Team.objects.filter(team_name=request.data.get("team")["team_name"])[0]
+        user = authenticate(
+            username=team.user.username, password=request.data.get("password")
+        )
         if user is not None:
             return Response(
                 {
@@ -59,11 +68,16 @@ class login(generics.GenericAPIView):
                 }
             )
         else:
-            return Response("Wrong Credentials! Please try again.", status=status.HTTP_403_FORBIDDEN)
-        
-        
+            return Response(
+                "Wrong Credentials! Please try again.", status=status.HTTP_403_FORBIDDEN
+            )
+
+
 class check(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        return Response("Registered/Logged in successfully. User is authenticated.", status=status.HTTP_200_OK)
+        return Response(
+            "Registered/Logged in successfully. User is authenticated.",
+            status=status.HTTP_200_OK,
+        )
