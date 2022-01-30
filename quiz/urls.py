@@ -10,5 +10,6 @@ urlpatterns = [
     path("evidence", evidence.as_view(), name="evidence"),
     path("storeAnswer", storeAnswer.as_view(), name="storeAnswer"),
     path("leaderboard", leaderboard.as_view(), name="leaderboard"),
-    path("saveParticipants", Teams, name="download"),
+    path("saveParticipants", Teams, name="download_p"),
+    path("saveLeaderboard", Leaderboard, name="download_l"),
 ]

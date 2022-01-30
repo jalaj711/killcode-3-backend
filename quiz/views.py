@@ -225,7 +225,7 @@ class evidence(APIView):
                 if evidence.round.round_no <= round_no:
                     evidence_array.append(
                         {
-                            "title": "ROUND "+str(evidence.round.round_no),
+                            "title": "ROUND " + str(evidence.round.round_no),
                             "riddle": str(evidence.round.riddle),
                             "killer_msg": str(evidence.round.killer_msg),
                             "text": str(evidence.text),
@@ -316,13 +316,46 @@ class leaderboard(APIView):
                     "rank": str(team.rank),
                 }
             )
+            team.rank = current_rank
+            team.save()
             current_rank += 1
         return Response(teams_array, status=status.HTTP_200_OK)
 
 
-def Teams(request):
+def Leaderboard(request):
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="teams.csv"'
+    writer = csv.writer(response)
+    for team in Team.objects.order_by("rank"):
+        writer.writerow(
+            [
+                team.rank,
+                team.team_name,
+                team.score,
+                team.participant1,
+                team.participant1_email,
+                team.participant1_dc,
+                team.participant1_phone,
+                team.participant2,
+                team.participant2_email,
+                team.participant2_dc,
+                team.participant2_phone,
+                team.participant3,
+                team.participant3_email,
+                team.participant3_dc,
+                team.participant3_phone,
+                team.participant4,
+                team.participant4_email,
+                team.participant4_dc,
+                team.participant4_phone,
+            ]
+        )
+    return response
+
+
+def Teams(request):
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="leaderboard.csv"'
     writer = csv.writer(response)
     for team in Team.objects.all():
         writer.writerow(
