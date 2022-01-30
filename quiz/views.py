@@ -147,9 +147,9 @@ class profiles(APIView):
         for profile in profiles:
             profiles_array.append(
                 {
-                    "name": str(profile.name),
+                    "title": str(profile.name),
                     "data": str(profile.data),
-                    "image": str(profile.image),
+                    "avatar_url": str(profile.image),
                 }
             )
         return Response(profiles_array, status=status.HTTP_200_OK)
@@ -225,7 +225,9 @@ class evidence(APIView):
                 if evidence.round.round_no <= round_no:
                     evidence_array.append(
                         {
-                            "round": str(evidence.round.round_no),
+                            "title": "ROUND "+str(evidence.round.round_no),
+                            "riddle": str(evidence.round.riddle),
+                            "killer_msg": str(evidence.round.killer_msg),
                             "text": str(evidence.text),
                             "image": str(evidence.image),
                         }

@@ -30,7 +30,7 @@ class Team(models.Model):
     rank = models.IntegerField(default=0)
     submit_time = models.DateTimeField(default=datetime.now)
 
-    def ___str___(self):
+    def __str__(self):
         return self.team_name
 
 
@@ -47,7 +47,7 @@ class Profile(models.Model):
     data = models.TextField()
     image = models.ImageField(upload_to="profilepics/", blank=True, default=None)
 
-    def ___str___(self):
+    def __str__(self):
         return self.name
 
 
@@ -62,8 +62,8 @@ class Round(models.Model):
     start_time = models.DateTimeField(default=datetime.now)
     end_time = models.DateTimeField(default=datetime.now)
 
-    def ___str___(self):
-        return self.round_no
+    def __str__(self):
+        return str(self.round_no)
 
 
 class Evidence(models.Model):
@@ -71,28 +71,27 @@ class Evidence(models.Model):
     text = models.TextField(default=None)
     image = models.ImageField(blank=True, upload_to="evidenceImage/", default=None)
 
-    def ___str___(self):
-        return self.round.round_no
+    def __str__(self):
+        return str(self.round.round_no)
 
 
 class Answer(models.Model):
     team = models.OneToOneField(Team, on_delete=models.CASCADE)
-    round = models.OneToOneField(Round, on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE)
     location = models.CharField(max_length=400)
     victim = models.CharField(max_length=400)
     submit_time = models.DateTimeField(auto_now=True)
     tries = models.IntegerField(default=1)
 
-    def ___str___(self):
-        return self.round.round_no + "_" + self.team.team_name
-
+    def __str__(self):
+        return self.team.team_name
 
 class Notification(models.Model):
     round = models.ForeignKey(Round, on_delete=models.CASCADE)
     notification = models.TextField()
 
-    def ___str___(self):
-        return self.round.round_no
+    def __str__(self):
+        return str(self.round.round_no) 
 
 
 class Universal(models.Model):
