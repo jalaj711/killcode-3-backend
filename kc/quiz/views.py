@@ -213,7 +213,12 @@ class evidence(APIView):
                 )
         evidence_array = []
         if round_no == 0:
-            return Response(evidence_array, notif_array, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {
+                    "evidences": evidence_array,
+                    "notifications": notif_array,
+                }
+            )
         else:
             evidences = Evidence.objects.order_by("round__round_no")
             for evidence in evidences:
@@ -225,7 +230,12 @@ class evidence(APIView):
                             "image": str(evidence.image),
                         }
                     )
-            return Response(evidence_array, notif_array, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "evidences": evidence_array,
+                    "notifications": notif_array,
+                }
+            )
 
 
 @permission_classes([IsAuthenticated])
