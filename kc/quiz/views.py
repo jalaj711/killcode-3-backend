@@ -10,6 +10,7 @@ from .serializers import *
 from django.contrib.auth import authenticate
 from django.http import HttpResponse
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 import csv
 
 
@@ -165,26 +166,32 @@ class round(APIView):
             )
         else:
             round = Round.objects.get(round_no=round_no)
-            next_round = Round.objects.get(round_no=round_no + 1)
-            if next_round is not None:
+            next_round = round_no + 1
+            try:
+                next_round = Round.objects.get(round_no=next_round)
                 return Response(
                     {
                         "round_no": round_no,
                         "riddle": round.riddle,
                         "killer_msg": round.killer_msg,
+                        "start_time": round.start_time,
+                        "end_time": round.end_time,
                         "next_round_start_time": next_round.start_time,
-                        "next_round_end_time": next_round.end_time,
+                        "location": round.ca_location,
+                        "victim": round.ca_victim,
                         "status": 200,
                     }
                 )
-            else:
+            except ObjectDoesNotExist:
                 return Response(
                     {
                         "round_no": round_no,
                         "riddle": round.riddle,
                         "killer_msg": round.killer_msg,
-                        "next_round_start_time": "NULL",
-                        "next_round_end_time": "NULL",
+                        "start_time": round.start_time,
+                        "end_time": round.end_time,
+                        "location": round.ca_location,
+                        "victim": round.ca_victim,
                         "status": 200,
                     }
                 )
@@ -206,7 +213,7 @@ class evidence(APIView):
                 )
         evidence_array = []
         if round_no == 0:
-            return Response(evidence_array, notif_array, status.HTTP_400_BAD_REQUEST)
+            return Response(evidence_array, notif_array, status=status.HTTP_400_BAD_REQUEST)
         else:
             evidences = Evidence.objects.order_by("round__round_no")
             for evidence in evidences:
@@ -242,6 +249,7 @@ class storeAnswer(APIView):
                     location=request.data.get("location"),
                     victim=request.data.get("victim"),
                 )
+                answer.save()
                 team.submit_time = answer.submit_time
                 return Response("Answer saved successfully.", status=status.HTTP_200_OK)
             else:
@@ -281,15 +289,12 @@ class leaderboard(APIView):
         current_rank = 1
         teams = Team.objects.order_by("-score", "submit_time")
         for team in teams:
-            participant_array = []
-            participant_array.append(
-                {
-                    "participant1": str(team.participant1),
-                    "participant2": str(team.participant2),
-                    "participant3": str(team.participant3),
-                    "participant4": str(team.participant4),
-                }
-            )
+            participant_array = [
+                str(team.participant1),
+                str(team.participant2),
+                str(team.participant3),
+                str(team.participant4),
+            ]
             team.rank = current_rank
             teams_array.append(
                 {
