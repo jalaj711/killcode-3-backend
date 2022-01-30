@@ -1,23 +1,28 @@
-from django.shortcuts import render
-from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth.models import User
 from rest_framework import viewsets, generics, authentication, permissions
-from knox.models import AuthToken
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import permission_classes, APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from knox.models import AuthToken
+from rest_framework import status
 from .models import *
 from .serializers import *
-from rest_framework import status
 from django.contrib.auth import authenticate
 from django.http import HttpResponse
-import csv
 from django.utils import timezone
+import csv
 
 
 def remove(temp):
     return temp.replace(" ", "")
+
+
+def check_duration():
+    tm = timezone.now()
+    obj = Universal.objects.all().first()
+    if tm > obj.end_time:
+        Universal.leaderboard_freeze = 1
+    return
 
 
 def check_round():
@@ -49,18 +54,32 @@ def check_ans(a, b):
     return False
 
 
-def calculate():
+def calculate_penalty(username):
     round_no = latest_round()
+    team = Team.objects.filter(user__username=username)
+    if round_no <= 5:
+        team.penalty += (round_no) * 5
+    else:
+        team.score += (2 * round.round_no - 5) * 5
+
+
+def calculate():
+    round_no = max(latest_round(), check_round())
     round = Round.objects.get(round_no=round_no)
-    answers = Answer.objects.filter(round=round).order_by("submit_time")
-    for answer in answers:
-        # answer = Answer.objects.filter(round=round, team=team)
-        # print(answer)
-        # answer = answer[0]
-        if check_ans(answer.location, round.ca_location):
-            answer.team.score += (round.round_no) * 5
-        if check_ans(answer.victim, round.ca_victim):
-            answer.team.score += (round.round_no) * 5
+    teams = Team.objects.all()
+    for team in teams:
+        answer = Answer.objects.filter(round=round, team=team).first()
+        if answer is not None:
+            if round_no <= 5:
+                if check_ans(answer.location, round.ca_location):
+                    team.score += (round.round_no) * 5
+                if check_ans(answer.victim, round.ca_victim):
+                    team.score += (round.round_no) * 5
+            else:
+                if check_ans(answer.location, round.ca_location):
+                    team.score += (2 * round.round_no - 5) * 5
+                if check_ans(answer.victim, round.ca_victim):
+                    team.score += (2 * round.round_no - 5) * 5
 
 
 @permission_classes(
@@ -120,7 +139,7 @@ class login(generics.GenericAPIView):
 
 
 @permission_classes([IsAuthenticated])
-class profile(APIView):
+class profiles(APIView):
     def get(self, request):
         profiles = Profile.objects.all()
         profiles_array = []
@@ -132,12 +151,7 @@ class profile(APIView):
                     "image": str(profile.image),
                 }
             )
-        return Response(
-            {
-                "profiles": profiles_array,
-                "status": 200,
-            }
-        )
+        return Response(profiles_array, status=status.HTTP_200_OK)
 
 
 @permission_classes([IsAuthenticated])
@@ -151,27 +165,50 @@ class round(APIView):
             )
         else:
             round = Round.objects.get(round_no=round_no)
-            return Response(
-                {
-                    "riddle": round.riddle,
-                    "killer_msg": round.killer_msg,
-                    "status": 200,
-                }
-            )
+            next_round = Round.objects.get(round_no=round_no + 1)
+            if next_round is not None:
+                return Response(
+                    {
+                        "round_no": round_no,
+                        "riddle": round.riddle,
+                        "killer_msg": round.killer_msg,
+                        "next_round_start_time": next_round.start_time,
+                        "next_round_end_time": next_round.end_time,
+                        "status": 200,
+                    }
+                )
+            else:
+                return Response(
+                    {
+                        "round_no": round_no,
+                        "riddle": round.riddle,
+                        "killer_msg": round.killer_msg,
+                        "next_round_start_time": "NULL",
+                        "next_round_end_time": "NULL",
+                        "status": 200,
+                    }
+                )
 
 
 @permission_classes([IsAuthenticated])
 class evidence(APIView):
     def get(self, request):
         round_no = latest_round()
+        live_round = check_round()
+        notifs = Notification.objects.filter(round__round_no=live_round)
+        notif_array = []
+        if notifs is not None:
+            for notif in notifs:
+                notif_array.append(
+                    {
+                        "notification": str(notif.notification),
+                    }
+                )
+        evidence_array = []
         if round_no == 0:
-            return Response(
-                "No rounds completed yet.",
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(evidence_array, notif_array, status.HTTP_400_BAD_REQUEST)
         else:
             evidences = Evidence.objects.order_by("round__round_no")
-            evidence_array = []
             for evidence in evidences:
                 if evidence.round.round_no <= round_no:
                     evidence_array.append(
@@ -181,12 +218,7 @@ class evidence(APIView):
                             "image": str(evidence.image),
                         }
                     )
-            return Response(
-                {
-                    "evidence": evidence_array,
-                    "status": 200,
-                }
-            )
+            return Response(evidence_array, notif_array, status=status.HTTP_200_OK)
 
 
 @permission_classes([IsAuthenticated])
@@ -201,7 +233,6 @@ class storeAnswer(APIView):
         else:
             team = Team.objects.get(user__username=request.user.username)
             round = Round.objects.get(round_no=round_no)
-            print(round)
             answer = Answer.objects.filter(team=team, round=round)
             n = answer.count()
             if n == 0:
@@ -211,8 +242,8 @@ class storeAnswer(APIView):
                     location=request.data.get("location"),
                     victim=request.data.get("victim"),
                 )
-                answer.save()
-                return Response(status=status.HTTP_200_OK)
+                team.submit_time = answer.submit_time
+                return Response("Answer saved successfully.", status=status.HTTP_200_OK)
             else:
                 answer = answer[0]
                 if answer.tries < round.tries:
@@ -220,7 +251,10 @@ class storeAnswer(APIView):
                     answer.location = request.data.get("victim")
                     answer.tries += 1
                     answer.save()
-                    return Response(status=status.HTTP_200_OK)
+                    team.submit_time = answer.submit_time
+                    return Response(
+                        "Answer saved successfully.", status=status.HTTP_200_OK
+                    )
                 else:
                     return Response(
                         "Number of tries are over.", status=status.HTTP_403_FORBIDDEN
@@ -228,59 +262,45 @@ class storeAnswer(APIView):
 
 
 @permission_classes([IsAuthenticated])
-class leaderboard(APIView):
-    def get(self, request, format=None):
-        if check_round() == -1:
-            calculate()
-            round_no = latest_round()
-            round = Round.objects.get(round_no=round_no)
-            answers = Answer.objects.filter(round=round).order_by(
-                "team__score", "submit_time"
-            )
-            current_rank = 1
-            teams_array = []
-            for answer in answers:
-                answer.team.rank = current_rank
-                teams_array.append(
-                    {
-                        "name": str(answer.team.team_name),
-                        "participant1": str(answer.team.participant1),
-                        "participant2": str(answer.team.participant2),
-                        "participant3": str(answer.team.participant3),
-                        "participant4": str(answer.team.participant4),
-                        "rank": str(answer.team.rank),
-                    }
-                )
-                current_rank += 1
-            teams = Team.objects.filter(score=0).order_by("-score", "submit_time")
-            for team in teams:
-                team.rank = current_rank
-                teams_array.append(
-                    {
-                        "name": str(team.team_name),
-                        "participant1": str(team.participant1),
-                        "participant2": str(team.participant2),
-                        "participant3": str(team.participant3),
-                        "participant4": str(team.participant4),
-                        "rank": str(team.rank),
-                    }
-                )
-                current_rank += 1
-            return Response({"standings": teams_array, "status": 200})
+class killcode(APIView):
+    def post(self, request):
+        killcode = request.data.get("killcode")
+        if check_ans(killcode, Universal.killcode):
+            Universal.leaderboard_freeze = 1
         else:
-            return Response(
-                "Access the leaderboard after the round is over.",
-                status=status.HTTP_403_FORBIDDEN,
-            )
+            calculate_penalty(request.user.username)
 
 
 @permission_classes([IsAuthenticated])
-class check(APIView):
+class leaderboard(APIView):
     def get(self, request, format=None):
-        return Response(
-            "Registered/Logged in successfully. User is authenticated.",
-            status=status.HTTP_200_OK,
-        )
+        check_duration()
+        if check_round() == -1 or Universal.leaderboard_freeze:
+            calculate()
+        teams_array = []
+        current_rank = 1
+        teams = Team.objects.order_by("-score", "submit_time")
+        for team in teams:
+            participant_array = []
+            participant_array.append(
+                {
+                    "participant1": str(team.participant1),
+                    "participant2": str(team.participant2),
+                    "participant3": str(team.participant3),
+                    "participant4": str(team.participant4),
+                }
+            )
+            team.rank = current_rank
+            teams_array.append(
+                {
+                    "name": str(team.team_name),
+                    "participant_array": participant_array,
+                    "score": str(team.final_score),
+                    "rank": str(team.rank),
+                }
+            )
+            current_rank += 1
+        return Response(teams_array, status=status.HTTP_200_OK)
 
 
 def Teams(request):
