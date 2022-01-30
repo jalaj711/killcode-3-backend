@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
+import django_heroku
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("SECRET_KEY")
+SECRET_KEY = "sdjvuhweov"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -82,24 +83,25 @@ WSGI_APPLICATION = "kc.wsgi.application"
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+    }
+}
+
+
 # DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'kcdata',
+#         'USER': 'kcadmin',
+#         'PASSWORD': config('POSTGRES_PASSWORD'),
+#         'HOST': 'db',                          #change to 'HOST':'db'- for docker / in local development change it to 'localhost'
+#         'PORT': '5432',
 #     }
 # }
 
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "kcdata",
-        "USER": "kcadmin",
-        "PASSWORD": config("POSTGRES_PASSWORD"),
-        "HOST": "db",  # change to 'HOST':'db'- for docker / in local development change it to 'localhost'
-        "PORT": "5432",
-    }
-}
 
 
 # Password validation
@@ -120,12 +122,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
 REST_FRAMEWORK = {
@@ -158,7 +154,7 @@ CORS_ORIGIN_WHITELIST = (
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -167,6 +163,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
+
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
@@ -178,3 +175,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+django_heroku.settings(locals())
