@@ -299,7 +299,10 @@ class leaderboard(APIView):
             calculate()
         teams_array = []
         current_rank = 1
-        teams = Team.objects.order_by("-score", "submit_time")
+        for team in Teams.objects.all():
+            team.final_score = team.score - team.penalty
+            team.save()
+        teams = Team.objects.order_by("-total_score", "submit_time")
         for team in teams:
             participant_array = [
                 str(team.participant1),
