@@ -319,9 +319,10 @@ class killcode(APIView):
         if check_duration_kc():
             if check_ans(killcode, Universal.objects.all().first().killcode):
                 Universal.leaderboard_freeze = 1
+                return Response("correct", status=status.HTTP_200_OK)
             else:
                 calculate_penalty(request.user.username)
-            return Response("Answer saved successfully.", status=status.HTTP_200_OK)
+                return Response("wrong", status=status.HTTP_200_OK)
         else:
             return Response("Time duration over.", status=status.HTTP_403_FORBIDDEN)
 
