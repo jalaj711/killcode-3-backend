@@ -70,25 +70,29 @@ def calculate_penalty(username):
         team.penalty += (round_no) * 5
     else:
         team.score += (2 * round.round_no - 5) * 5
+    team.save()
 
 
 def calculate():
-    round_no = check_round()
-    round = Round.objects.get(round_no=round_no)
+    round_no = latest_round()
     teams = Team.objects.all()
-    for team in teams:
-        answer = Answer.objects.filter(round=round, team=team).first()
-        if answer is not None:
-            if round_no <= 5:
-                if check_ans(answer.location, round.ca_location):
-                    team.score += (round.round_no) * 5
-                if check_ans(answer.victim, round.ca_victim):
-                    team.score += (round.round_no) * 5
-            else:
-                if check_ans(answer.location, round.ca_location):
-                    team.score += (2 * round.round_no - 5) * 5
-                if check_ans(answer.victim, round.ca_victim):
-                    team.score += (2 * round.round_no - 5) * 5
+    round = Round.objects.get(round_no=round_no)
+    if round is not None:
+        for team in teams:
+            answer = Answer.objects.filter(round_no=round_no, team=team).first()
+            if answer is not None:
+                if round_no <= 5:
+                    if check_ans(answer.location, round.ca_location):
+                        team.score += (round.round_no) * 5
+                    if check_ans(answer.victim, round.ca_victim):
+                        team.score += (round.round_no) * 5
+                else:
+                    if check_ans(answer.location, round.ca_location):
+                        team.score += (2 * round.round_no - 5) * 5
+                    if check_ans(answer.victim, round.ca_victim):
+                        team.score += (2 * round.round_no - 5) * 5
+                # print(team.score)
+                team.save()
 
 
 @permission_classes(
@@ -168,7 +172,6 @@ class profiles(APIView):
 class round(APIView):
     def get(self, request):
         round_no = check_round()
-        print(round_no)
         if round_no == -1:
             next_round = latest_round() + 1
             try:
@@ -277,17 +280,18 @@ class storeAnswer(APIView):
         else:
             team = Team.objects.get(user__username=request.user.username)
             round = Round.objects.get(round_no=round_no)
-            answer = Answer.objects.filter(team=team, round=round)
+            answer = Answer.objects.filter(team=team, round_no=round.round_no)
             n = answer.count()
             if n == 0:
                 answer = Answer(
                     team=team,
-                    round=round,
+                    round_no=round.round_no,
                     location=request.data.get("location"),
                     victim=request.data.get("victim"),
                 )
                 answer.save()
                 team.submit_time = answer.submit_time
+                team.save()
                 return Response({
                     "message": "Answer saved successfully.",
                     "tries_left": round.tries-1,
@@ -301,6 +305,7 @@ class storeAnswer(APIView):
                     answer.tries += 1
                     answer.save()
                     team.submit_time = answer.submit_time
+                    team.save()
                     return Response({
                         "message": "Answer saved successfully.",
                         "tries_left": round.tries - answer.tries,
@@ -321,7 +326,7 @@ class killcode(APIView):
                 lb = Universal.objects.all().first()
                 lb.leaderboard_freeze = True
                 lb.save()
-                print(lb.leaderboard_freeze)
+                # print(lb.leaderboard_freeze)
                 return Response("correct", status=status.HTTP_200_OK)
             else:
                 calculate_penalty(request.user.username)

@@ -77,7 +77,7 @@ class Evidence(models.Model):
 
 class Answer(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    round = models.ForeignKey(Round, on_delete=models.CASCADE)
+    round_no = models.IntegerField(default=1)
     location = models.CharField(max_length=400)
     victim = models.CharField(max_length=400)
     submit_time = models.DateTimeField(auto_now=True)

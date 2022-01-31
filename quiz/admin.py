@@ -10,13 +10,13 @@ from .models import (
     Killcode,
 )
 
-class AnswerInline(admin.StackedInline):
-    model=Answer
-    extra=3
+# class AnswerInline(admin.StackedInline):
+#     model=Answer
+#     extra=3
 
 class RoundAdmin(admin.ModelAdmin):
-    fields=['round_no','riddle','killer_msg','ca','ca_location','ca_victim','tries','start_time','end_time']
-    inlines=[AnswerInline]
+    # fields=['round_no','riddle','killer_msg','ca','ca_location','ca_victim','tries','start_time','end_time']
+    # inlines=[AnswerInline]
     list_display = ("round_no","start_time", "end_time")
 
 @admin.register(Team)
@@ -29,7 +29,7 @@ class TeamAdmin(admin.ModelAdmin):
 # Register your models here.
 #admin.site.register(Team)
 admin.site.register(Profile)
-admin.site.register(Round,RoundAdmin)
+admin.site.register(Round)
 admin.site.register(Evidence)
 admin.site.register(Answer)
 admin.site.register(Notification)
