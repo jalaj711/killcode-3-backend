@@ -180,7 +180,6 @@ class round(APIView):
         if round_no == -1:
             last_round = latest_round()
             next_round = latest_round() + 1
-            flag = 0
             try:
                 last_round_obj = Round.objects.get(round_no=last_round)
             except:
@@ -190,73 +189,30 @@ class round(APIView):
             except:
                 next_round_obj = None
             if last_round_obj is not None and next_round_obj is not None:
-                team = Team.objects.get(user__username=request.user.username)
-                print("sdcs")
-                print(last_round)
-                try:
-                    ans = Answer.objects.get(round_no=last_round, team=team)
-                except:
-                    ans = None
-                if ans is not None:
-                    if check_ans(ans.location, last_round_obj.ca_location) and check_ans(ans.victim, last_round_obj.ca_victim):
-                        flag = 1
-                    return Response(
-                        {
-                            "correct_ans": str(last_round_obj.ca),
-                            "evidence_img": str(last_round_obj.evidence_img),
-                            "encrypt_img": str(last_round_obj.encrypt_img),
-                            "next_round": str(next_round),
-                            "next_round_start_time": str(next_round_obj.start_time),
-                            "flag": str(flag),
-                            "status": 200,
-                        }
-                    )
-                else:
-                    return Response(
-                        {
-                            "correct_ans": str(last_round_obj.ca),
-                            "evidence_img": str(last_round_obj.evidence_img),
-                            "encrypt_img": str(last_round_obj.encrypt_img),
-                            "next_round": str(next_round),
-                            "next_round_start_time": str(next_round_obj.start_time),
-                            "status": 200,
-                        }
-                    )
-
+                return Response(
+                    {
+                        "correct_ans": str(last_round_obj.ca),
+                        "evidence_img": str(last_round_obj.evidence_img),
+                        "encrypt_img": str(last_round_obj.encrypt_img),
+                        "next_round": next_round,
+                        "next_round_start_time": next_round_obj.start_time,
+                        "status": 200,
+                    }
+                )
             elif last_round_obj is not None:
-                team = Team.objects.get(user__username=request.user.username)
-                print("sdcs")
-                print(last_round)
-                try:
-                    ans = Answer.objects.get(round_no=last_round, team=team)
-                except:
-                    ans = None
-                if ans is not None:
-                    if check_ans(ans.location, last_round_obj.ca_location) and check_ans(ans.victim, last_round_obj.ca_victim):
-                        flag = 1
-                    return Response(
-                        {
-                            "correct_ans": str(last_round_obj.ca),
-                            "evidence_img": str(last_round_obj.evidence_img),
-                            "encrypt_img": str(last_round_obj.encrypt_img),
-                            "flag": str(flag),
-                            "status": 200,
-                        }
-                    )
-                else:
-                    return Response(
-                        {
-                            "correct_ans": str(last_round_obj.ca),
-                            "evidence_img": str(last_round_obj.evidence_img),
-                            "encrypt_img": str(last_round_obj.encrypt_img),
-                            "status": 200,
-                        }
-                    )
+                return Response(
+                    {
+                        "correct_ans": str(last_round_obj.ca),
+                        "evidence_img": str(last_round_obj.evidence_img),
+                        "encrypt_img": str(last_round_obj.encrypt_img),
+                        "status": 200,
+                    }
+                )
             else:
                 return Response(
                     {
-                        "next_round": str(next_round),
-                        "next_round_start_time": str(next_round_obj.start_time),
+                        "next_round": next_round,
+                        "next_round_start_time": next_round_obj.start_time,
                         "status": 200,
                     }
                 )
@@ -273,8 +229,8 @@ class round(APIView):
                         "end_time": round.end_time,
                         "tries": round.tries,
                         "next_round_start_time": next_round.start_time,
-                        # "location": round.ca_location,
-                        # "victim": round.ca_victim,
+                        "location": round.ca_location,
+                        "victim": round.ca_victim,
                         "status": 200,
                     }
                 )
@@ -286,8 +242,8 @@ class round(APIView):
                         "start_time": round.start_time,
                         "end_time": round.end_time,
                         "tries": round.tries,
-                        # "location": round.ca_location,
-                        # "victim": round.ca_victim,
+                        "location": round.ca_location,
+                        "victim": round.ca_victim,
                         "status": 200,
                     }
                 )
@@ -312,10 +268,7 @@ class evidence(APIView):
                         "encrypt_img": str(round.encrypt_img)
                     }
                 )
-        try:
-            evidence = Evidence.objects.get(round__round_no=live_round)
-        except:
-            evidence = None
+        evidence = Evidence.objects.get(round__round_no=live_round)
         if evidence is not None:
             if evidence.available:
                 return Response(
