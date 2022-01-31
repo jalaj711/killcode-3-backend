@@ -318,7 +318,10 @@ class killcode(APIView):
         killcode = request.data.get("killcode")
         if check_duration_kc():
             if check_ans(killcode, Universal.objects.all().first().killcode):
-                Universal.objects.all().first().leaderboard_freeze = True
+                lb = Universal.objects.all().first()
+                lb.leaderboard_freeze = True
+                lb.save()
+                print(lb.leaderboard_freeze)
                 return Response("correct", status=status.HTTP_200_OK)
             else:
                 calculate_penalty(request.user.username)
