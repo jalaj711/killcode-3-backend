@@ -32,8 +32,7 @@ def check_round():
     for round in rounds:
         if tm > round.start_time and tm <= round.end_time:
             return round.round_no
-        else:
-            return -1
+    return -1
 
 
 def latest_round():
@@ -159,6 +158,7 @@ class profiles(APIView):
 class round(APIView):
     def get(self, request):
         round_no = check_round()
+        print(round_no)
         if round_no == -1:
             next_round = latest_round() + 1
             try:
@@ -174,7 +174,6 @@ class round(APIView):
                 return Response(
                     {
                         "message":"No rounds live",
-                        "next_round_start_time": next_round.start_time,
                         "status": 200,
                     }
                 )

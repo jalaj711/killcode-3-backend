@@ -31,7 +31,7 @@ class Team(models.Model):
     submit_time = models.DateTimeField(default=datetime.now)
 
     def __str__(self):
-        return self.team_name
+        return str(self.team_name)+":"+str(self.participant1)+"("+str(self.participant1_phone)+","+str(self.participant1_dc)+")"+","+str(self.participant2)+"("+str(self.participant2_phone)+","+str(self.participant2_dc)+")"+","+str(self.participant3)+"("+str(self.participant3_phone)+","+str(self.participant3_dc)+")"+","+str(self.participant4)+"("+str(self.participant4_phone)+","+str(self.participant4_dc)+")"
 
 
 class Killcode(models.Model):
@@ -39,7 +39,7 @@ class Killcode(models.Model):
     answer = models.CharField(max_length=200)
 
     def ___str___(self):
-        return self.team.team_name
+        return str(self.team.team_name)
 
 
 class Profile(models.Model):
