@@ -26,6 +26,14 @@ def check_duration():
     return
 
 
+def check_duration_kc():
+    tm = timezone.now()
+    obj = Universal.objects.all().first()
+    if tm > obj.start_time and tm <= obj.end_time:
+        return True
+    return False
+
+
 def check_round():
     tm = timezone.now()
     rounds = Round.objects.all()
@@ -56,7 +64,8 @@ def check_ans(a, b):
 
 def calculate_penalty(username):
     round_no = max(latest_round(), check_round())
-    team = Team.objects.filter(user__username=username)
+    team = Team.objects.get(user__username=username)
+    print(team)
     if round_no <= 5:
         team.penalty += (round_no) * 5
     else:
@@ -307,12 +316,14 @@ class storeAnswer(APIView):
 class killcode(APIView):
     def post(self, request):
         killcode = request.data.get("killcode")
-        if check_duration():
-            if check_ans(killcode, Universal.killcode):
+        if check_duration_kc():
+            if check_ans(killcode, Universal.objects.all().first().killcode):
                 Universal.leaderboard_freeze = 1
             else:
                 calculate_penalty(request.user.username)
-            
+            return Response("Answer saved successfully.", status=status.HTTP_200_OK)
+        else:
+            return Response("Time duration over.", status=status.HTTP_403_FORBIDDEN)
 
 
 @permission_classes([IsAuthenticated])
