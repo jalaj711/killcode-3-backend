@@ -160,10 +160,24 @@ class round(APIView):
     def get(self, request):
         round_no = check_round()
         if round_no == -1:
-            return Response(
-                "No rounds live",
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            next_round = latest_round() + 1
+            try:
+                next_round = Round.objects.get(round_no=next_round)
+                return Response(
+                    {
+                        "message":"No rounds live",
+                        "next_round_start_time": next_round.start_time,
+                        "status": 200,
+                    }
+                )
+            except ObjectDoesNotExist:
+                return Response(
+                    {
+                        "message":"No rounds live",
+                        "next_round_start_time": next_round.start_time,
+                        "status": 200,
+                    }
+                )
         else:
             round = Round.objects.get(round_no=round_no)
             next_round = round_no + 1
