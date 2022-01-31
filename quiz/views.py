@@ -167,6 +167,7 @@ class round(APIView):
                 return Response(
                     {
                         "message": "No rounds live",
+                        "next_round": next_round,
                         "next_round_start_time": next_round.start_time,
                         "status": 200,
                     }
@@ -348,7 +349,7 @@ class leaderboard(APIView):
 
 def Leaderboard(request):
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = 'attachment; filename="teams.csv"'
+    response["Content-Disposition"] = 'attachment; filename="leaderboard.csv"'
     writer = csv.writer(response)
     for team in Team.objects.order_by("rank"):
         writer.writerow(
@@ -379,7 +380,7 @@ def Leaderboard(request):
 
 def Teams(request):
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = 'attachment; filename="leaderboard.csv"'
+    response["Content-Disposition"] = 'attachment; filename="teams.csv"'
     writer = csv.writer(response)
     for team in Team.objects.all():
         writer.writerow(
