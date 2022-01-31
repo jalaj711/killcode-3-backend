@@ -76,7 +76,7 @@ class Evidence(models.Model):
 
 
 class Answer(models.Model):
-    team = models.OneToOneField(Team, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
     round = models.ForeignKey(Round, on_delete=models.CASCADE)
     location = models.CharField(max_length=400)
     victim = models.CharField(max_length=400)

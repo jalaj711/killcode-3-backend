@@ -278,7 +278,11 @@ class storeAnswer(APIView):
                 )
                 answer.save()
                 team.submit_time = answer.submit_time
-                return Response("Answer saved successfully.", status=status.HTTP_200_OK)
+                return Response({
+                    "message": "Answer saved successfully.",
+                    "tries_left": round.tries-1,
+                    "status": 200
+                })
             else:
                 answer = answer[0]
                 if answer.tries < round.tries:
@@ -287,9 +291,11 @@ class storeAnswer(APIView):
                     answer.tries += 1
                     answer.save()
                     team.submit_time = answer.submit_time
-                    return Response(
-                        "Answer saved successfully.", status=status.HTTP_200_OK
-                    )
+                    return Response({
+                        "message": "Answer saved successfully.",
+                        "tries_left": round.tries - answer.tries,
+                        "status": 200
+                    })
                 else:
                     return Response(
                         "Number of tries are over.", status=status.HTTP_403_FORBIDDEN
