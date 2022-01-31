@@ -97,7 +97,7 @@ class Notification(models.Model):
 class Universal(models.Model):
     start_time = models.DateTimeField(default=datetime.now)
     end_time = models.DateTimeField(default=datetime.now)
-    leaderboard_freeze = models.BooleanField(default=0)
+    leaderboard_freeze = models.BooleanField(default=False)
     killcode = models.CharField(max_length=200)
 
     def __str__(self):

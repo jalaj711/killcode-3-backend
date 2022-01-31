@@ -22,7 +22,7 @@ def check_duration():
     tm = timezone.now()
     obj = Universal.objects.all().first()
     if tm > obj.end_time:
-        Universal.leaderboard_freeze = 1
+        Universal.objects.all().first().leaderboard_freeze = 1
     return
 
 
@@ -172,12 +172,12 @@ class round(APIView):
         if round_no == -1:
             next_round = latest_round() + 1
             try:
-                next_round = Round.objects.get(round_no=next_round)
+                next_round_obj = Round.objects.get(round_no=next_round)
                 return Response(
                     {
                         "message": "No rounds live",
                         "next_round": next_round,
-                        "next_round_start_time": next_round.start_time,
+                        "next_round_start_time": next_round_obj.start_time,
                         "status": 200,
                     }
                 )
@@ -318,7 +318,7 @@ class killcode(APIView):
         killcode = request.data.get("killcode")
         if check_duration_kc():
             if check_ans(killcode, Universal.objects.all().first().killcode):
-                Universal.leaderboard_freeze = 1
+                Universal.objects.all().first().leaderboard_freeze = True
                 return Response("correct", status=status.HTTP_200_OK)
             else:
                 calculate_penalty(request.user.username)
@@ -331,7 +331,7 @@ class killcode(APIView):
 class leaderboard(APIView):
     def get(self, request, format=None):
         check_duration()
-        if check_round() == -1 or Universal.leaderboard_freeze:
+        if check_round() == -1 or Universal.objects.all().first().leaderboard_freeze:
             calculate()
         teams_array = []
         current_rank = 1
