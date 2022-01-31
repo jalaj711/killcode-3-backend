@@ -45,7 +45,8 @@ class Killcode(models.Model):
 class Profile(models.Model):
     name = models.CharField(max_length=400)
     data = models.TextField()
-    image = models.ImageField(upload_to="profilepics/", blank=True, default=None)
+    image = models.ImageField(upload_to="profilepics/",
+                              blank=True, default=None)
 
     def __str__(self):
         return self.name
@@ -58,9 +59,14 @@ class Round(models.Model):
     ca = models.TextField(default=None)
     ca_location = models.CharField(max_length=400)
     ca_victim = models.CharField(max_length=400)
-    tries = models.IntegerField(default=3)
+    tries = models.IntegerField(default=2)
+    evidence_img = models.ImageField(
+        blank=True, upload_to="evidenceImage/", null=True)
+    encrypt_img = models.ImageField(
+        blank=True, upload_to="encryptImage/", null=True)
     start_time = models.DateTimeField(default=datetime.now)
     end_time = models.DateTimeField(default=datetime.now)
+    check = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.round_no)
@@ -68,8 +74,8 @@ class Round(models.Model):
 
 class Evidence(models.Model):
     round = models.OneToOneField(Round, on_delete=models.CASCADE)
-    text = models.TextField(default=None)
-    image = models.ImageField(blank=True, upload_to="evidenceImage/", default=None)
+    killer_note = models.TextField(default=None)
+    available = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.round.round_no)
@@ -86,12 +92,13 @@ class Answer(models.Model):
     def __str__(self):
         return self.team.team_name
 
-class Notification(models.Model):
-    round = models.ForeignKey(Round, on_delete=models.CASCADE)
-    notification = models.TextField()
 
-    def __str__(self):
-        return str(self.round.round_no) 
+# class Notification(models.Model):
+#     round = models.ForeignKey(Round, on_delete=models.CASCADE)
+#     notification = models.TextField()
+
+#     def __str__(self):
+#         return str(self.round.round_no)
 
 
 class Universal(models.Model):

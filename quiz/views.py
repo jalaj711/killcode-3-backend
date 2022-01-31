@@ -77,9 +77,12 @@ def calculate():
     round_no = latest_round()
     teams = Team.objects.all()
     round = Round.objects.get(round_no=round_no)
+    round.check = 1
+    round.save()
     if round is not None:
         for team in teams:
-            answer = Answer.objects.filter(round_no=round_no, team=team).first()
+            answer = Answer.objects.filter(
+                round_no=round_no, team=team).first()
             if answer is not None:
                 if round_no <= 5:
                     if check_ans(answer.location, round.ca_location):
@@ -91,6 +94,8 @@ def calculate():
                         team.score += (2 * round.round_no - 5) * 5
                     if check_ans(answer.victim, round.ca_victim):
                         team.score += (2 * round.round_no - 5) * 5
+                if check_ans(answer.location, round.ca_location) and check_ans(answer.victim, round.ca_victim):
+                    team.submit_time = answer.submit_time
                 # print(team.score)
                 team.save()
 
@@ -173,21 +178,41 @@ class round(APIView):
     def get(self, request):
         round_no = check_round()
         if round_no == -1:
+            last_round = latest_round()
             next_round = latest_round() + 1
             try:
+                last_round_obj = Round.objects.get(round_no=last_round)
+            except:
+                last_round_obj = None
+            try:
                 next_round_obj = Round.objects.get(round_no=next_round)
+            except:
+                next_round_obj = None
+            if last_round_obj is not None and next_round_obj is not None:
                 return Response(
                     {
-                        "message": "No rounds live",
+                        "correct_ans": str(last_round_obj.ca),
+                        "evidence_img": str(last_round_obj.evidence_img),
+                        "encrypt_img": str(last_round_obj.encrypt_img),
                         "next_round": next_round,
                         "next_round_start_time": next_round_obj.start_time,
                         "status": 200,
                     }
                 )
-            except ObjectDoesNotExist:
+            elif last_round_obj is not None:
                 return Response(
                     {
-                        "message": "No rounds live",
+                        "correct_ans": str(last_round_obj.ca),
+                        "evidence_img": str(last_round_obj.evidence_img),
+                        "encrypt_img": str(last_round_obj.encrypt_img),
+                        "status": 200,
+                    }
+                )
+            else:
+                return Response(
+                    {
+                        "next_round": next_round,
+                        "next_round_start_time": next_round_obj.start_time,
                         "status": 200,
                     }
                 )
@@ -200,7 +225,6 @@ class round(APIView):
                     {
                         "round_no": round_no,
                         "riddle": round.riddle,
-                        "killer_msg": round.killer_msg,
                         "start_time": round.start_time,
                         "end_time": round.end_time,
                         "tries": round.tries,
@@ -215,9 +239,9 @@ class round(APIView):
                     {
                         "round_no": round_no,
                         "riddle": round.riddle,
-                        "killer_msg": round.killer_msg,
                         "start_time": round.start_time,
                         "end_time": round.end_time,
+                        "tries": round.tries,
                         "location": round.ca_location,
                         "victim": round.ca_victim,
                         "status": 200,
@@ -230,42 +254,34 @@ class evidence(APIView):
     def get(self, request):
         round_no = latest_round()
         live_round = check_round()
-        notifs = Notification.objects.filter(round__round_no=live_round)
-        notif_array = []
-        if notifs is not None:
-            for notif in notifs:
-                notif_array.append(
+        evidence_array = []
+        rounds = Round.objects.order_by("round_no")
+        for round in rounds:
+            if round.round_no <= round_no:
+                evidence_array.append(
                     {
-                        "notification": str(notif.notification),
+                        "title": "ROUND " + str(round.round_no),
+                        "riddle": str(round.riddle),
+                        "killer_msg": str(round.killer_msg),
+                        "correct_ans": str(round.ca),
+                        "evidence_img": str(round.evidence_img),
+                        "encrypt_img": str(round.encrypt_img)
                     }
                 )
-        evidence_array = []
-        if round_no == 0:
-            return Response(
-                {
-                    "evidences": evidence_array,
-                    "notifications": notif_array,
-                }
-            )
-        else:
-            evidences = Evidence.objects.order_by("round__round_no")
-            for evidence in evidences:
-                if evidence.round.round_no <= round_no:
-                    evidence_array.append(
-                        {
-                            "title": "ROUND " + str(evidence.round.round_no),
-                            "riddle": str(evidence.round.riddle),
-                            "killer_msg": str(evidence.round.killer_msg),
-                            "text": str(evidence.text),
-                            "image": str(evidence.image),
-                        }
-                    )
-            return Response(
-                {
-                    "evidences": evidence_array,
-                    "notifications": notif_array,
-                }
-            )
+        evidence = Evidence.objects.get(round__round_no=live_round)
+        if evidence is not None:
+            if evidence.available:
+                return Response(
+                    {
+                        "evidences": evidence_array,
+                        "killer_note": evidence.killer_note
+                    }
+                )
+        return Response(
+            {
+                "evidences": evidence_array,
+            }
+        )
 
 
 @permission_classes([IsAuthenticated])
@@ -290,8 +306,8 @@ class storeAnswer(APIView):
                     victim=request.data.get("victim"),
                 )
                 answer.save()
-                team.submit_time = answer.submit_time
-                team.save()
+                # team.submit_time = answer.submit_time
+                # team.save()
                 return Response({
                     "message": "Answer saved successfully.",
                     "tries_left": round.tries-1,
@@ -304,8 +320,8 @@ class storeAnswer(APIView):
                     answer.victim = request.data.get("victim")
                     answer.tries += 1
                     answer.save()
-                    team.submit_time = answer.submit_time
-                    team.save()
+                    # team.submit_time = answer.submit_time
+                    # team.save()
                     return Response({
                         "message": "Answer saved successfully.",
                         "tries_left": round.tries - answer.tries,
@@ -339,8 +355,12 @@ class killcode(APIView):
 class leaderboard(APIView):
     def get(self, request, format=None):
         check_duration()
+        latest = latest_round()
+        latest_round_obj = Round.objects.get(round_no=latest)
         if check_round() == -1 or Universal.objects.all().first().leaderboard_freeze:
-            calculate()
+            if latest_round_obj is not None:
+                if latest_round_obj.check == 0:
+                    calculate()
         teams_array = []
         current_rank = 1
         for team in Team.objects.all():

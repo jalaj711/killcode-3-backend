@@ -5,7 +5,6 @@ from .models import (
     Round,
     Evidence,
     Answer,
-    Notification,
     Universal,
     Killcode,
 )
@@ -32,6 +31,5 @@ admin.site.register(Profile)
 admin.site.register(Round)
 admin.site.register(Evidence)
 admin.site.register(Answer)
-admin.site.register(Notification)
 admin.site.register(Universal)
 admin.site.register(Killcode)
