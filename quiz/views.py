@@ -55,7 +55,7 @@ def check_ans(a, b):
 
 
 def calculate_penalty(username):
-    round_no = latest_round()
+    round_no = max(latest_round(), check_round())
     team = Team.objects.filter(user__username=username)
     if round_no <= 5:
         team.penalty += (round_no) * 5
@@ -64,7 +64,7 @@ def calculate_penalty(username):
 
 
 def calculate():
-    round_no = max(latest_round(), check_round())
+    round_no = check_round()
     round = Round.objects.get(round_no=round_no)
     teams = Team.objects.all()
     for team in teams:
@@ -307,10 +307,12 @@ class storeAnswer(APIView):
 class killcode(APIView):
     def post(self, request):
         killcode = request.data.get("killcode")
-        if check_ans(killcode, Universal.killcode):
-            Universal.leaderboard_freeze = 1
-        else:
-            calculate_penalty(request.user.username)
+        if check_duration():
+            if check_ans(killcode, Universal.killcode):
+                Universal.leaderboard_freeze = 1
+            else:
+                calculate_penalty(request.user.username)
+            
 
 
 @permission_classes([IsAuthenticated])
