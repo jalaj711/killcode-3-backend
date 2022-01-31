@@ -118,7 +118,8 @@ class login(generics.GenericAPIView):
     serializer_class = LoginSerializer
 
     def post(self, request):
-        team = Team.objects.filter(team_name=request.data.get("team")["team_name"])[0]
+        team = Team.objects.filter(
+            team_name=request.data.get("team")["team_name"])[0]
         user = authenticate(
             username=team.user.username, password=request.data.get("password")
         )
@@ -165,7 +166,7 @@ class round(APIView):
                 next_round = Round.objects.get(round_no=next_round)
                 return Response(
                     {
-                        "message":"No rounds live",
+                        "message": "No rounds live",
                         "next_round_start_time": next_round.start_time,
                         "status": 200,
                     }
@@ -173,7 +174,7 @@ class round(APIView):
             except ObjectDoesNotExist:
                 return Response(
                     {
-                        "message":"No rounds live",
+                        "message": "No rounds live",
                         "status": 200,
                     }
                 )
@@ -189,6 +190,7 @@ class round(APIView):
                         "killer_msg": round.killer_msg,
                         "start_time": round.start_time,
                         "end_time": round.end_time,
+                        "tries": round.tries,
                         "next_round_start_time": next_round.start_time,
                         "location": round.ca_location,
                         "victim": round.ca_victim,
@@ -281,7 +283,7 @@ class storeAnswer(APIView):
                 answer = answer[0]
                 if answer.tries < round.tries:
                     answer.location = request.data.get("location")
-                    answer.location = request.data.get("victim")
+                    answer.victim = request.data.get("victim")
                     answer.tries += 1
                     answer.save()
                     team.submit_time = answer.submit_time
