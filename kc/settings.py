@@ -146,6 +146,7 @@ CORS_ORIGIN_WHITELIST = (
     "https://killcode.debsocnitdgp.in",
     "http://killcode.myrealms.in",
     "https://killcode.vercel.app",
+    "https://kill-code.vercel.app",
 )
 
 
