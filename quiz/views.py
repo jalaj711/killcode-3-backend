@@ -18,12 +18,12 @@ def remove(temp):
     return temp.replace(" ", "")
 
 
-def check_duration():
-    tm = timezone.now()
-    obj = Universal.objects.all().first()
-    if tm > obj.end_time:
-        Universal.objects.all().first().leaderboard_freeze = 1
-    return
+# def check_duration():
+#     tm = timezone.now()
+#     obj = Universal.objects.all().first()
+#     if tm > obj.end_time:
+#         Universal.objects.all().first().leaderboard_freeze = 1
+#     return
 
 
 def check_duration_kc():
@@ -65,7 +65,7 @@ def check_ans(a, b):
 def calculate_penalty(username):
     round_no = max(latest_round(), check_round())
     team = Team.objects.get(user__username=username)
-    print(team)
+    # print(team)
     if round_no <= 5:
         team.penalty += (round_no) * 5
     else:
@@ -180,6 +180,7 @@ class round(APIView):
         if round_no == -1:
             last_round = latest_round()
             next_round = latest_round() + 1
+            flag = 0
             try:
                 last_round_obj = Round.objects.get(round_no=last_round)
             except:
@@ -189,30 +190,55 @@ class round(APIView):
             except:
                 next_round_obj = None
             if last_round_obj is not None and next_round_obj is not None:
+                team = Team.objects.get(user__username=request.user.username)
+                # print("sdcs")
+                # print(last_round)
+                try:
+                    ans = Answer.objects.get(round_no=last_round, team=team)
+                except:
+                    ans = None
+                if ans is not None:
+                    if check_ans(ans.location, last_round_obj.ca_location) and check_ans(ans.victim, last_round_obj.ca_victim):
+                        flag = 1
                 return Response(
                     {
+                        "message": "No rounds live",
                         "correct_ans": str(last_round_obj.ca),
                         "evidence_img": str(last_round_obj.evidence_img),
                         "encrypt_img": str(last_round_obj.encrypt_img),
-                        "next_round": next_round,
-                        "next_round_start_time": next_round_obj.start_time,
+                        "next_round": str(next_round),
+                        "next_round_start_time": str(next_round_obj.start_time),
+                        "flag": str(flag),
                         "status": 200,
                     }
                 )
             elif last_round_obj is not None:
+                team = Team.objects.get(user__username=request.user.username)
+                # print("sdcs")
+                # print(last_round)
+                try:
+                    ans = Answer.objects.get(round_no=last_round, team=team)
+                except:
+                    ans = None
+                if ans is not None:
+                    if check_ans(ans.location, last_round_obj.ca_location) and check_ans(ans.victim, last_round_obj.ca_victim):
+                        flag = 1
                 return Response(
                     {
+                        "message": "No rounds live",
                         "correct_ans": str(last_round_obj.ca),
                         "evidence_img": str(last_round_obj.evidence_img),
                         "encrypt_img": str(last_round_obj.encrypt_img),
+                        "flag": str(flag),
                         "status": 200,
                     }
                 )
             else:
                 return Response(
                     {
-                        "next_round": next_round,
-                        "next_round_start_time": next_round_obj.start_time,
+                        "message": "No rounds live",
+                        "next_round": str(next_round),
+                        "next_round_start_time": str(next_round_obj.start_time),
                         "status": 200,
                     }
                 )
@@ -229,8 +255,8 @@ class round(APIView):
                         "end_time": round.end_time,
                         "tries": round.tries,
                         "next_round_start_time": next_round.start_time,
-                        "location": round.ca_location,
-                        "victim": round.ca_victim,
+                        # "location": round.ca_location,
+                        # "victim": round.ca_victim,
                         "status": 200,
                     }
                 )
@@ -242,8 +268,8 @@ class round(APIView):
                         "start_time": round.start_time,
                         "end_time": round.end_time,
                         "tries": round.tries,
-                        "location": round.ca_location,
-                        "victim": round.ca_victim,
+                        # "location": round.ca_location,
+                        # "victim": round.ca_victim,
                         "status": 200,
                     }
                 )
@@ -268,7 +294,10 @@ class evidence(APIView):
                         "encrypt_img": str(round.encrypt_img)
                     }
                 )
-        evidence = Evidence.objects.get(round__round_no=live_round)
+        try:
+            evidence = Evidence.objects.get(round__round_no=live_round)
+        except:
+            evidence = None
         if evidence is not None:
             if evidence.available:
                 return Response(
@@ -339,9 +368,12 @@ class killcode(APIView):
         killcode = request.data.get("killcode")
         if check_duration_kc():
             if check_ans(killcode, Universal.objects.all().first().killcode):
-                lb = Universal.objects.all().first()
-                lb.leaderboard_freeze = True
-                lb.save()
+                # lb = Universal.objects.all().first()
+                # lb.leaderboard_freeze = True
+                # lb.save()
+                team = Team.objects.get(user__username=request.user.username)
+                team.score+=1000
+                team.save()
                 # print(lb.leaderboard_freeze)
                 return Response("correct", status=status.HTTP_200_OK)
             else:
@@ -354,10 +386,13 @@ class killcode(APIView):
 @permission_classes([IsAuthenticated])
 class leaderboard(APIView):
     def get(self, request, format=None):
-        check_duration()
+        # check_duration()
         latest = latest_round()
-        latest_round_obj = Round.objects.get(round_no=latest)
-        if check_round() == -1 or Universal.objects.all().first().leaderboard_freeze:
+        try:
+            latest_round_obj = Round.objects.get(round_no=latest)
+        except:
+            latest_round_obj = None
+        if check_round() == -1:
             if latest_round_obj is not None:
                 if latest_round_obj.check == 0:
                     calculate()
