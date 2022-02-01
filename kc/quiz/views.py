@@ -95,7 +95,7 @@ def calculate():
                         team.score += (2 * round.round_no - 4) * 5
                     if check_ans(answer.victim, round.ca_victim):
                         team.score += (2 * round.round_no - 4) * 5
-                if check_ans(answer.location, round.ca_location) and check_ans(answer.victim, round.ca_victim):
+                if check_ans(answer.location, round.ca_location) or check_ans(answer.victim, round.ca_victim):
                     team.submit_time = answer.submit_time
                 # print(team.score)
                 team.save()
