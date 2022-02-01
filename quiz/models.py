@@ -64,6 +64,10 @@ class Round(models.Model):
         blank=True, upload_to="evidenceImage/", null=True)
     encrypt_img = models.ImageField(
         blank=True, upload_to="encryptImage/", null=True)
+    blood_evidence_img = models.ImageField(
+        blank=True, upload_to="evidenceImage/", null=True)
+    blood_encrypt_img = models.ImageField(
+        blank=True, upload_to="encryptImage/", null=True)
     start_time = models.DateTimeField(default=datetime.now)
     end_time = models.DateTimeField(default=datetime.now)
     check = models.IntegerField(default=0)
