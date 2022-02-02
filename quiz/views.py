@@ -19,18 +19,10 @@ def remove(temp):
     return temp.replace(" ", "")
 
 
-# def check_duration():
-#     tm = timezone.now()
-#     obj = Universal.objects.all().first()
-#     if tm > obj.end_time:
-#         Universal.objects.all().first().leaderboard_freeze = 1
-#     return
-
-
 def check_duration_kc():
     tm = timezone.now()
     obj = Universal.objects.all().first()
-    if tm > obj.start_time and tm <= obj.end_time:
+    if tm > obj.start_time and tm <= obj.end_time and obj.leaderboard_freeze == False:
         return True
     return False
 
@@ -64,14 +56,14 @@ def check_ans(a, b):
 
 
 def calculate_penalty(username):
-    round_no = max(latest_round(), check_round())
-    team = Team.objects.get(user__username=username)
-    # print(team)
-    if round_no < 5:
-        team.penalty += (round_no) * 5
-    else:
-        team.score += (2 * round.round_no - 4) * 5
-    team.save()
+    if latest_round() != 8:
+        round_no = max(latest_round(), check_round())
+        team = Team.objects.get(user__username=username)
+        if round_no < 5:
+            team.penalty += (round_no) * 5
+        else:
+            team.score += (2 * round.round_no - 4) * 5
+        team.save()
 
 
 def calculate():
@@ -210,8 +202,6 @@ class round(APIView):
                         "correct_ans": str(last_round_obj.ca),
                         "evidence_img": str(last_round_obj.evidence_img),
                         "encrypt_img": str(last_round_obj.encrypt_img),
-                        "evidence_img_blood": str(last_round_obj.blood_evidence_img),
-                        "encrypt_img_blood": str(last_round_obj.blood_encrypt_img),
                         "next_round": str(next_round),
                         "next_round_start_time": str(next_round_obj.start_time),
                         "flag_1": str(flag_1),
@@ -232,16 +222,16 @@ class round(APIView):
                 if ans is not None:
                     if check_ans(ans.location, last_round_obj.ca_location) and check_ans(ans.victim, last_round_obj.ca_victim):
                         flag_1 = 1
+                obj = Universal.objects.all().first()
                 return Response(
                     {
                         "message": "No rounds live",
                         "correct_ans": str(last_round_obj.ca),
                         "evidence_img": str(last_round_obj.evidence_img),
                         "encrypt_img": str(last_round_obj.encrypt_img),
-                        "evidence_img_blood": str(last_round_obj.blood_evidence_img),
-                        "encrypt_img_blood": str(last_round_obj.blood_encrypt_img),
                         "flag_1": str(flag_1),
                         "flag_2": str(flag_2),
+                        "kill_code_time": str(obj.end_time),
                         "status": 200,
                     }
                 )
@@ -375,19 +365,28 @@ class killcode(APIView):
     def post(self, request):
         killcode = request.data.get("killcode")
         if check_duration_kc():
+            obj = Universal.objects.all().first()
+            obj.ans = killcode
+            obj.save()
             if check_ans(killcode, Universal.objects.all().first().killcode):
                 team = Team.objects.get(user__username=request.user.username)
                 team.score += 1000
-                team.save()
-                Universal.objects.all().first().end_time = datetime.datetime.now()
-                Universal.objects.all().first().save()
-                print(Universal.objects.all().first().end_time)
+                team.save() 
+                obj.leaderboard_freeze = True
+                obj.save()
+                # print(obj.leaderboard_freeze)
                 return Response("correct", status=status.HTTP_200_OK)
             else:
                 calculate_penalty(request.user.username)
                 return Response("wrong", status=status.HTTP_200_OK)
         else:
-            return Response("Time duration over.", status=status.HTTP_403_FORBIDDEN)
+            return Response("Game over", status=status.HTTP_403_FORBIDDEN)
+    
+    def get(self,request):
+        if check_duration_kc():
+            return Response("1",status=status.HTTP_200_OK)
+        else:
+            return Response("0",status=status.HTTP_403_FORBIDDEN)
 
 
 @permission_classes([IsAuthenticated])
