@@ -62,7 +62,7 @@ def calculate_penalty(username):
         if round_no < 5:
             team.penalty += (round_no) * 5
         else:
-            team.score += (2 * round.round_no - 4) * 5
+            team.score += (2 * round_no - 4) * 5
         team.save()
 
 
