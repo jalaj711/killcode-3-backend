@@ -110,6 +110,7 @@ class Universal(models.Model):
     end_time = models.DateTimeField(default=datetime.now)
     leaderboard_freeze = models.BooleanField(default=False)
     killcode = models.CharField(max_length=200)
+    ans = models.CharField(max_length=200, null=True, blank=True)
 
     def __str__(self):
         return "Duration"
