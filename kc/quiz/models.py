@@ -103,6 +103,7 @@ class Answer(models.Model):
 class Clue(models.Model):
     clue_id = models.CharField("Unique ID of the clue", max_length=30)
     content = models.TextField("Content of the clue", max_length=3000)
+    location = models.CharField("Location of the field", max_length=300)
 
 class ClueRedirect(models.Model):
     clue_id = models.CharField("Unique ID of the clue", max_length=30)

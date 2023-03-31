@@ -368,14 +368,21 @@ class clueRedirect(APIView):
 
 @permission_classes([IsAuthenticated])
 class unlockClue(APIView):
-    def post(self, request):
-        round_no = check_round()
+    def get(self, request):
         clue_id = request.GET.get("clue_id")
         try:
             clue = Clue.objects.get(clue_id=clue_id)
-            return Response(clue.content)
+            return Response({
+                "status": 200,
+                "content": clue.content,
+                "location": clue.location
+            })
         except:
-            return Response("Invalid Clue")
+            return Response({
+                "status": 200,
+                "content": "Invalid Clue",
+                "location": "Invalid Location"
+            })
 
 @permission_classes([IsAuthenticated])
 class killcode(APIView):
