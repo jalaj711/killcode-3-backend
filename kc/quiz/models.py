@@ -107,7 +107,7 @@ class Clue(models.Model):
 
 class ClueRedirect(models.Model):
     clue_id = models.CharField("Unique ID of the clue", max_length=30)
-    redirect_to = models.CharField("Redirect URI for the clue", max_length=50)
+    redirect_to = models.CharField("Redirect URI for the clue", max_length=300)
 
 
 class Universal(models.Model):
