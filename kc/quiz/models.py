@@ -100,6 +100,14 @@ class Answer(models.Model):
 #     def __str__(self):
 #         return str(self.round.round_no)
 
+class Clue(models.Model):
+    clue_id = models.CharField("Unique ID of the clue", max_length=30)
+    content = models.TextField("Content of the clue", max_length=3000)
+
+class ClueRedirect(models.Model):
+    clue_id = models.CharField("Unique ID of the clue", max_length=30)
+    redirect_to = models.CharField("Redirect URI for the clue", max_length=50)
+
 
 class Universal(models.Model):
     start_time = models.DateTimeField(default=datetime.now)

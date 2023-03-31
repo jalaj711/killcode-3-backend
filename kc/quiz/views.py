@@ -8,7 +8,7 @@ from rest_framework import status
 from .models import *
 from .serializers import *
 from django.contrib.auth import authenticate
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 import csv
@@ -359,6 +359,23 @@ class storeAnswer(APIView):
                         "Number of tries are over.", status=status.HTTP_403_FORBIDDEN
                     )
 
+@permission_classes([AllowAny])
+class clueRedirect(APIView):
+    def get(self, request):
+        clue_id = request.GET.get("clue_id")
+        redirect = ClueRedirect.objects.get(clue_id=clue_id)
+        return HttpResponseRedirect(redirect.redirect_to)
+
+@permission_classes([IsAuthenticated])
+class unlockClue(APIView):
+    def post(self, request):
+        round_no = check_round()
+        clue_id = request.GET.get("clue_id")
+        try:
+            clue = Clue.objects.get(clue_id=clue_id)
+            return Response(clue.content)
+        except:
+            return Response("Invalid Clue")
 
 @permission_classes([IsAuthenticated])
 class killcode(APIView):
