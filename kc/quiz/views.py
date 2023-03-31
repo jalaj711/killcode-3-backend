@@ -366,7 +366,7 @@ class clueRedirect(APIView):
         redirect = ClueRedirect.objects.get(clue_id=clue_id)
         return HttpResponseRedirect(redirect.redirect_to)
 
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 class unlockClue(APIView):
     def get(self, request):
         clue_id = request.GET.get("clue_id")
