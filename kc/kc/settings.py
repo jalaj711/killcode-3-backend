@@ -93,10 +93,10 @@ WSGI_APPLICATION = "kc.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "kcdata",
-        "USER": "kcadmin",
+        "NAME": "kcdb2",
+        "USER": "kcuser",
         "PASSWORD": config("POSTGRES_PASSWORD"),
-        "HOST": "db",  # change to 'HOST':'db'- for docker / in local development change it to 'localhost'
+        "HOST": "localhost",  # change to 'HOST':'db'- for docker / in local development change it to 'localhost'
         "PORT": "5432",
     }
 }
