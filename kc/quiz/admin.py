@@ -8,7 +8,8 @@ from .models import (
     Universal,
     Killcode,
     ClueRedirect,
-    Clue
+    Clue,
+    ClueAccess
 )
 
 # class AnswerInline(admin.StackedInline):
@@ -37,3 +38,4 @@ admin.site.register(Universal)
 admin.site.register(Killcode)
 admin.site.register(ClueRedirect)
 admin.site.register(Clue)
+admin.site.register(ClueAccess)
