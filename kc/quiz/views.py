@@ -366,6 +366,8 @@ class unlockClue(APIView):
         clue_id = request.GET.get("clue_id")
         try:
             clue = Clue.objects.get(clue_id=clue_id)
+            with open("./access.txt", "a") as f:
+                f.write(request.user + " accessed " + clue_id + "\n")
             return Response({
                 "status": 200,
                 "content": clue.content,
