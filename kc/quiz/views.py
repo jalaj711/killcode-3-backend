@@ -77,16 +77,10 @@ def calculate():
             answer = Answer.objects.filter(
                 round_no=round_no, team=team).first()
             if answer is not None:
-                if round_no < 5:
-                    if check_ans(answer.location, round.ca_location):
-                        team.score += (round.round_no) * 5
-                    if check_ans(answer.victim, round.ca_victim):
-                        team.score += (round.round_no) * 5
-                else:
-                    if check_ans(answer.location, round.ca_location):
-                        team.score += (2 * round.round_no - 4) * 5
-                    if check_ans(answer.victim, round.ca_victim):
-                        team.score += (2 * round.round_no - 4) * 5
+                if check_ans(answer.location, round.ca_location):
+                    team.score += 100
+                if check_ans(answer.victim, round.ca_victim):
+                    team.score += 100
                 if check_ans(answer.location, round.ca_location) or check_ans(answer.victim, round.ca_victim):
                     team.submit_time = answer.submit_time
                 # print(team.score)
@@ -394,7 +388,7 @@ class killcode(APIView):
             obj.save()
             if check_ans(killcode, Universal.objects.all().first().killcode):
                 team = Team.objects.get(user__username=request.user.username)
-                team.score += 1000
+                team.score += 1600
                 team.save() 
                 obj.leaderboard_freeze = True
                 obj.save()
