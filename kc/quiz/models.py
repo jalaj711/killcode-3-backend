@@ -105,6 +105,10 @@ class Clue(models.Model):
     content = models.TextField("Content of the clue", max_length=3000)
     location = models.CharField("Location of the field", max_length=300)
 
+class ClueAccess(models.Model):
+    clue = models.ForeignKey(Clue, on_delete=models.PROTECT)
+    user = models.CharField("Team name", max_length=300)
+
 class ClueRedirect(models.Model):
     clue_id = models.CharField("Unique ID of the clue", max_length=30)
     redirect_to = models.CharField("Redirect URI for the clue", max_length=300)
